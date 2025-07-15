@@ -9,7 +9,7 @@ export default function LoginWithSpotify() {
     const codeChallenge = await generateCodeChallenge(codeVerifier);
 
     // Store code_verifier for token exchange
-    localStorage.setItem('spotify_code_verifier', codeVerifier);
+    sessionStorage.setItem("spotify_code_verifier", codeVerifier);
 
     // ✅ Construct correct Spotify auth URL with PKCE
     const authUrl =

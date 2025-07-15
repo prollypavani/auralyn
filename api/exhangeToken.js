@@ -1,5 +1,5 @@
 export async function exchangeToken(code) {
-  const codeVerifier = localStorage.getItem("spotify_code_verifier");
+  const codeVerifier = sessionStorage.getItem("spotify_code_verifier"); // changed
 
   const body = new URLSearchParams({
     grant_type: "authorization_code",
@@ -8,6 +8,11 @@ export async function exchangeToken(code) {
     client_id: import.meta.env.VITE_SPOTIFY_CLIENT_ID,
     code_verifier: codeVerifier,
   });
+
+  console.log("🔍 redirect_uri:", import.meta.env.VITE_SPOTIFY_REDIRECT_URI);
+  console.log("🔍 client_id:", import.meta.env.VITE_SPOTIFY_CLIENT_ID);
+  console.log("🔍 code_verifier:", codeVerifier);
+  console.log("🔍 code:", code);
 
   try {
     const res = await fetch("https://accounts.spotify.com/api/token", {
@@ -26,7 +31,7 @@ export async function exchangeToken(code) {
     }
 
     console.log("✅ Spotify Access Token:", data.access_token);
-    localStorage.setItem("spotify_access_token", data.access_token);
+    sessionStorage.setItem("spotify_access_token", data.access_token); // also update here
     return data;
   } catch (err) {
     console.error("❌ Error exchanging token:", err);
