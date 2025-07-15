@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import './Home.css';
 import LoginWithSpotify from '../components/LoginWithSpotify';
-import { exchangeToken } from '../utils/spotifyAuth'; // ✅ fixed path
+import { exchangeToken } from '../utils/spotifyAuth';
 
 export default function Home() {
   const [form, setForm] = useState({
@@ -11,12 +11,25 @@ export default function Home() {
     count: 10,
   });
 
+  const [accessToken, setAccessToken] = useState(null);
+
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get("code");
+    const code = urlParams.get('code');
 
-    if (code) {
-      exchangeToken(code);
+    if (code && !accessToken) {
+      exchangeToken(code)
+        .then((data) => {
+          setAccessToken(data.access_token);
+          console.log('✅ Access Token:', data.access_token);
+
+          // Clean URL and clear verifier
+          localStorage.removeItem('spotify_code_verifier');
+          window.history.replaceState({}, document.title, '/');
+        })
+        .catch((err) => {
+          console.error('❌ Token exchange failed:', err);
+        });
     }
   }, []);
 
@@ -27,6 +40,7 @@ export default function Home() {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Form submitted:", form);
+    // You can now trigger playlist generation using accessToken here
   };
 
   return (

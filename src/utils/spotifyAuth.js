@@ -4,8 +4,8 @@ export async function exchangeToken(code) {
   const body = new URLSearchParams({
     grant_type: "authorization_code",
     code: code,
-    redirect_uri: "http://127.0.0.1:5173",
-    client_id: "90b33372512643d1b5f8ae1eb840721d",
+    redirect_uri: import.meta.env.VITE_SPOTIFY_REDIRECT_URI,
+    client_id: import.meta.env.VITE_SPOTIFY_CLIENT_ID,
     code_verifier: codeVerifier,
   });
 
@@ -20,15 +20,16 @@ export async function exchangeToken(code) {
 
     const data = await res.json();
 
-    if (data.access_token) {
-      localStorage.setItem("spotify_access_token", data.access_token);
-      console.log("✅ Spotify Access Token:", data.access_token);
-      // Optional: clean URL
-      window.history.replaceState({}, document.title, "/");
-    } else {
+    if (!res.ok) {
       console.error("❌ Token exchange failed:", data);
+      throw new Error("Token exchange failed");
     }
+
+    localStorage.setItem("spotify_access_token", data.access_token);
+    console.log("✅ Spotify Access Token:", data.access_token);
+    return data;
   } catch (err) {
     console.error("❌ Error exchanging token:", err);
+    throw err;
   }
 }

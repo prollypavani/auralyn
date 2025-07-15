@@ -1,31 +1,35 @@
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Only POST requests allowed' });
-  }
-
-  const { code, code_verifier } = req.body;
+export async function exchangeToken(code) {
+  const codeVerifier = localStorage.getItem("spotify_code_verifier");
 
   const body = new URLSearchParams({
-    grant_type: 'authorization_code',
-    code: code,
-    redirect_uri: 'http://localhost:5173', // change this later to production
-    client_id: process.env.SPOTIFY_CLIENT_ID,
-    code_verifier: code_verifier,
+    grant_type: "authorization_code",
+    code,
+    redirect_uri: import.meta.env.VITE_SPOTIFY_REDIRECT_URI,
+    client_id: import.meta.env.VITE_SPOTIFY_CLIENT_ID,
+    code_verifier: codeVerifier,
   });
 
   try {
-    const response = await fetch('https://accounts.spotify.com/api/token', {
-      method: 'POST',
+    const res = await fetch("https://accounts.spotify.com/api/token", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        "Content-Type": "application/x-www-form-urlencoded",
       },
       body: body.toString(),
     });
 
-    const data = await response.json();
+    const data = await res.json();
 
-    return res.status(200).json(data);
+    if (!res.ok) {
+      console.error("❌ Token exchange failed:", data);
+      throw new Error(data.error_description || "Token exchange failed");
+    }
+
+    console.log("✅ Spotify Access Token:", data.access_token);
+    localStorage.setItem("spotify_access_token", data.access_token);
+    return data;
   } catch (err) {
-    return res.status(500).json({ error: 'Token exchange failed', details: err });
+    console.error("❌ Error exchanging token:", err);
+    throw err;
   }
 }

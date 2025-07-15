@@ -8,10 +8,13 @@ export default function LoginWithSpotify() {
     const codeVerifier = generateCodeVerifier();
     const codeChallenge = await generateCodeChallenge(codeVerifier);
 
+    // Store code_verifier for token exchange
     localStorage.setItem('spotify_code_verifier', codeVerifier);
 
-    const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&scope=playlist-modify-public%20user-read-private%20user-read-email&code_challenge_method=S256&code_challenge=${codeChallenge}`;
+    // ✅ Construct correct Spotify auth URL with PKCE
+    const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&scope=playlist-modify-public%20user-read-private%20user-read-email&code_challenge_method=S256&code_challenge=${codeChallenge}`;
 
+    // Redirect user to Spotify login
     window.location.href = authUrl;
   };
 
