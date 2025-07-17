@@ -4,7 +4,7 @@ export async function exchangeToken(code) {
   const body = {
     code,
     code_verifier: codeVerifier,
-    redirect_uri: "https://auralyn-theta.vercel.app/", // make sure it matches Spotify
+    redirect_uri: "https://auralyn-theta.vercel.app/", // MUST match Spotify dashboard
   };
 
   try {
