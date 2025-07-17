@@ -1,40 +1,37 @@
-export async function exchangeToken(code) {
-  const codeVerifier = sessionStorage.getItem("spotify_code_verifier"); // changed
+// /api/tokenExchange.js
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
 
-  const body = new URLSearchParams({
-    grant_type: "authorization_code",
-    code,
-    redirect_uri: import.meta.env.VITE_SPOTIFY_REDIRECT_URI,
-    client_id: import.meta.env.VITE_SPOTIFY_CLIENT_ID,
-    code_verifier: codeVerifier,
-  });
+  const { code, code_verifier, redirect_uri } = req.body;
 
-  console.log("🔍 redirect_uri:", import.meta.env.VITE_SPOTIFY_REDIRECT_URI);
-  console.log("🔍 client_id:", import.meta.env.VITE_SPOTIFY_CLIENT_ID);
-  console.log("🔍 code_verifier:", codeVerifier);
-  console.log("🔍 code:", code);
+  const params = new URLSearchParams();
+  params.append("client_id", process.env.SPOTIFY_CLIENT_ID);
+  params.append("grant_type", "authorization_code");
+  params.append("code", code);
+  params.append("redirect_uri", redirect_uri);
+  params.append("code_verifier", code_verifier);
 
   try {
-    const res = await fetch("https://accounts.spotify.com/api/token", {
+    const response = await fetch("https://accounts.spotify.com/api/token", {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
-      body: body.toString(),
+      body: params,
     });
 
-    const data = await res.json();
+    const data = await response.json();
 
-    if (!res.ok) {
-      console.error("❌ Token exchange failed:", data);
-      throw new Error(data.error_description || "Token exchange failed");
+    if (!response.ok) {
+      console.error("❌ Spotify API error:", data);
+      return res.status(response.status).json(data);
     }
 
-    console.log("✅ Spotify Access Token:", data.access_token);
-    sessionStorage.setItem("spotify_access_token", data.access_token); // also update here
-    return data;
+    return res.status(200).json(data);
   } catch (err) {
-    console.error("❌ Error exchanging token:", err);
-    throw err;
+    console.error("❌ Server Error:", err);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 }
