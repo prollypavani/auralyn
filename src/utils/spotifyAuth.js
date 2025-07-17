@@ -8,7 +8,7 @@ export async function exchangeToken(code) {
   };
 
   try {
-    const res = await fetch("/api/tokenExchange", {
+    const res = await fetch("/api/exchangeToken", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
