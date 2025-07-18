@@ -9,14 +9,16 @@ export default function Home() {
     mood: '',
     genre: '',
     artist: '',
+    language: '',
     count: 10,
+    playlistName: '',
   });
 
   const [accessToken, setAccessToken] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [playlistTracks, setPlaylistTracks] = useState([]);
 
-  // Token exchange
+  // 🎫 Handle Spotify token
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
@@ -27,7 +29,6 @@ export default function Home() {
           setAccessToken(data.access_token);
           console.log('✅ Access Token:', data.access_token);
 
-          // Clean URL and clear verifier
           localStorage.removeItem('spotify_code_verifier');
           window.history.replaceState({}, document.title, '/');
         })
@@ -37,7 +38,7 @@ export default function Home() {
     }
   }, []);
 
-  // Fetch user profile
+  // 👤 Get user profile
   useEffect(() => {
     if (accessToken) {
       getUserProfile(accessToken)
@@ -63,7 +64,7 @@ export default function Home() {
       return;
     }
 
-    const query = `${form.mood} ${form.genre} ${form.artist}`;
+    const query = `${form.mood} ${form.genre} ${form.artist} ${form.language}`;
     console.log("🔍 Searching for:", query);
 
     try {
@@ -94,17 +95,53 @@ export default function Home() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
-          <input name="mood" placeholder="How are you feeling?" onChange={handleChange} />
-          <input name="genre" placeholder="Preferred genre" onChange={handleChange} />
-          <input name="artist" placeholder="Favorite artist" onChange={handleChange} />
-          <input name="count" type="number" value={form.count} onChange={handleChange} />
+        <form onSubmit={handleSubmit} className="playlist-form">
+          <input
+            name="mood"
+            placeholder="Mood (e.g. chill, happy)"
+            value={form.mood}
+            onChange={handleChange}
+            required
+          />
+          <input
+            name="genre"
+            placeholder="Genre (e.g. pop, rock)"
+            value={form.genre}
+            onChange={handleChange}
+          />
+          <input
+            name="language"
+            placeholder="Language (optional)"
+            value={form.language}
+            onChange={handleChange}
+          />
+          <input
+            name="artist"
+            placeholder="Favorite Artist"
+            value={form.artist}
+            onChange={handleChange}
+          />
+          <input
+            name="count"
+            type="number"
+            min="1"
+            max="100"
+            value={form.count}
+            onChange={handleChange}
+          />
+          <input
+            name="playlistName"
+            placeholder="Playlist Name"
+            value={form.playlistName}
+            onChange={handleChange}
+            required
+          />
           <button type="submit">🎶 Generate Playlist</button>
         </form>
 
         {playlistTracks.length > 0 && (
           <div className="results">
-            <h3>🎧 Recommended Tracks:</h3>
+            <h3>🎧 Preview: {form.playlistName || "Your Playlist"}</h3>
             <ul>
               {playlistTracks.map((track) => (
                 <li key={track.id}>
