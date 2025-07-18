@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import './Home.css';
 import LoginWithSpotify from '../components/LoginWithSpotify';
 import { exchangeToken } from '../utils/spotifyAuth';
+import { getUserProfile, searchTracks } from "../utils/spotify";
 
 export default function Home() {
   const [form, setForm] = useState({
@@ -12,7 +13,10 @@ export default function Home() {
   });
 
   const [accessToken, setAccessToken] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
+  const [playlistTracks, setPlaylistTracks] = useState([]);
 
+  // Token exchange
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
@@ -33,14 +37,42 @@ export default function Home() {
     }
   }, []);
 
+  // Fetch user profile
+  useEffect(() => {
+    if (accessToken) {
+      getUserProfile(accessToken)
+        .then((profile) => {
+          console.log("👤 User Profile:", profile);
+          setUserProfile(profile);
+        })
+        .catch((err) => {
+          console.error("❌ Failed to fetch profile:", err);
+        });
+    }
+  }, [accessToken]);
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted:", form);
-    // You can now trigger playlist generation using accessToken here
+
+    if (!accessToken) {
+      alert("Please log in to Spotify first.");
+      return;
+    }
+
+    const query = `${form.mood} ${form.genre} ${form.artist}`;
+    console.log("🔍 Searching for:", query);
+
+    try {
+      const tracks = await searchTracks(accessToken, query, form.count);
+      setPlaylistTracks(tracks);
+      console.log("🎵 Found Tracks:", tracks);
+    } catch (err) {
+      console.error("❌ Error searching tracks:", err);
+    }
   };
 
   return (
@@ -49,6 +81,19 @@ export default function Home() {
         <h1 className="title">Auralyn</h1>
         <p className="subtitle">Mood-based Spotify Playlist Generator</p>
 
+        {userProfile && (
+          <div className="profile">
+            <p>Welcome, {userProfile.display_name} 👋</p>
+            {userProfile.images?.[0]?.url && (
+              <img
+                src={userProfile.images[0].url}
+                alt="Profile"
+                style={{ width: "80px", borderRadius: "50%", marginTop: "10px" }}
+              />
+            )}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit}>
           <input name="mood" placeholder="How are you feeling?" onChange={handleChange} />
           <input name="genre" placeholder="Preferred genre" onChange={handleChange} />
@@ -56,6 +101,20 @@ export default function Home() {
           <input name="count" type="number" value={form.count} onChange={handleChange} />
           <button type="submit">🎶 Generate Playlist</button>
         </form>
+
+        {playlistTracks.length > 0 && (
+          <div className="results">
+            <h3>🎧 Recommended Tracks:</h3>
+            <ul>
+              {playlistTracks.map((track) => (
+                <li key={track.id}>
+                  <img src={track.album.images[2]?.url} alt="" width="40" />
+                  {track.name} – {track.artists.map((a) => a.name).join(", ")}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <LoginWithSpotify />
       </div>
