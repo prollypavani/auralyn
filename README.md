@@ -1,12 +1,4 @@
-# React + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+AURALYN: Mood-based Spotify Playlist Generator (because everyone deserves to have their personalized playlists)
+anyone who knows me knows my love for music so i had to make a project like this. 
+while i learn to handle Spotify Authentication with token exchange for privacy, using Spotify's developer sources, Spotify's APIs to give everyone their very own mood-based playlist. it is an ongoing project. i started off very simple and im trying to increase features to make it more flexible and fulfilling for users. 
+(fav project fr)
